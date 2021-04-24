@@ -1,4 +1,5 @@
 {
+  "homepage": "https://suman-jaiswal.github.io/see-saw",
   "name": "see-saw",
   "version": "0.1.0",
   "private": true,
@@ -11,9 +12,10 @@
     "classnames": "^2.3.1",
     "date-fns": "^2.21.1",
     "firebase": "^8.4.1",
+    "gh-pages": "^3.1.0",
     "lodash": "^4.17.21",
     "postcss": "^8.2.12",
-    "react": "^17.0.2", 
+    "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-firebase-hooks": "^3.0.3",
     "react-scripts": "4.0.3",
@@ -21,6 +23,8 @@
     "web-vitals": "^1.1.1"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
