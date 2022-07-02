@@ -8,7 +8,6 @@ import 'firebase/auth';
 // import {useCollectionData} from 'react-firebase-hooks/firestore';
 
 //components
-import Button from './components/Button';
 import Header from './components/Header.jsx';
 import Channel from './components/Channel.jsx'
 
