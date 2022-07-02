@@ -1,34 +1,42 @@
 import React from 'react';
-import {formatRelative} from 'date-fns';
 
 
 export default function Message(
-  {
-  createdAt = null,
-  text = '',
-  displayName = '',
-  photoURL = ''} , 
-  props) { 
-  
-  return (
-    <>
-    <div id="block">
-      <div className="ID">
-      {photoURL? (
-        <img src={photoURL} alt="Avatar" width={45} height={45}/>
-      ) : null }
-      <div id="time">
-      {displayName? <p id="name">{displayName}</p> : null}
-      
-      {createdAt?.seconds? (
-        <span>
-          {formatRelative(new Date(createdAt.seconds * 1000), new Date())}
-        </span>
-      ) : null}</div>
-      </div>
-      <div id="text">{text}</div> 
-    
-    </div>
-    </>
-  )
+    {
+        createdAt = null,
+        text = '',
+        displayName = '',
+        photoURL = '' },
+    props) {
+
+    return (
+        <>
+            <div className="block">
+                <div className="dp">
+                    {photoURL ? (<>
+                        <img src={photoURL} id="Avatar" alt="Avatar" width={30} height={30} />
+                        <div className="id">
+                            {/* {displayName ? <div className="name">{displayName.split(' ')[0]}</div> : null} */}
+                        </div>
+                    </>
+                    ) : null}
+                </div>
+                <div className="text-box">
+
+
+                    <div className="msg">{text}</div>
+
+                    {/* {createdAt?.seconds ?
+                        <div className='time'>
+                            {formatRelative(new Date(createdAt.seconds * 1000), new Date())}
+                        </div>
+                        : null
+                    } */}
+                </div>
+
+
+
+            </div>
+        </>
+    )
 }
