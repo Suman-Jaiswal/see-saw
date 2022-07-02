@@ -71,16 +71,16 @@ function App() {
 
     return (
 
-        <div>
+        <>
             {user ? (
                 <>
                     <Header signOut={signOut} />
                     <Channel auth={auth} user={user} db={db} />
                 </>
             ) : (
-                <Button onClick={signInWithGoogle}>Sign In with Google</Button>
+                <button className='login' onClick={signInWithGoogle}>Sign In with Google</button>
             )}
-        </div>
+        </>
     );
 }
 
