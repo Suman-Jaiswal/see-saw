@@ -100,7 +100,10 @@ function App() {
 
 
     if (initializing) return (
-        <h2>Loading...</h2>
+        <h4 style={{
+            marginTop: 100,
+            textAlign: "center"
+        }}>Loading...</h4>
     )
 
     return (
