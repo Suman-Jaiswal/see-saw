@@ -85,7 +85,7 @@ const Channel = ({ user = null, db = null }, props) => {
                     <div className="scroll"></div>
 
 
-                    <form onSubmit={handleOnSubmit}>
+                    <form autoComplete='off' onSubmit={handleOnSubmit}>
                         <input type="text"
                             value={newMessage}
                             onChange={handleOnChange}
