@@ -112,7 +112,17 @@ function App() {
                     <Channel auth={auth} user={user} db={db} />
                 </>
             ) : (
-                <button className='login' onClick={signInWithGoogle}>Sign In with Google</button>
+                <div className='home'>
+                    <div>
+                        <img src="logo.webp" alt="" width={200} height={200} />
+                        <h1 style={{
+                            textAlign: "center"
+                        }}>See Saw</h1>
+                    </div>
+
+                    <button className='login' onClick={signInWithGoogle}>Sign In with Google</button>
+                </div>
+
             )}
         </div>
     );

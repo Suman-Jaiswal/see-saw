@@ -11,6 +11,7 @@ button:focus{
     outline: none;
 }
 .app{
+    height: 100vh;
     margin: auto;
     max-width: 600px;
     background-color: #191919 !important;
@@ -31,10 +32,16 @@ button:focus{
    margin-left: 5px;
    margin-top: 3px;
 }
+.home{
+    padding: auto;
+    height: 500px;
+    padding-top: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
 .login{
-    position: absolute;
-    top: 100px;
-    left: calc(50% - 80px);
     padding: 20px;
     background-color: #353535;
     color: white;
@@ -53,8 +60,9 @@ button:focus{
     cursor: pointer;
 }
 .channel{
-    min-height: 78vh;
     padding: 10px 20px;
+    background-color: #191919;
+    padding-bottom: 50px;
 }
 
 li.self{
@@ -113,7 +121,9 @@ li.self .text-box{
 
 form{
     height: 55px;
-    position: sticky;
+    position: fixed;
+    width: 100%;
+    max-width: 600px;
     bottom: 0;
     z-index: 100;
     background-color: #191919;
