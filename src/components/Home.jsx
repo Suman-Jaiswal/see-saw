@@ -98,7 +98,8 @@ function Home(props) {
                     <div className="row header m-0 py-2" style={{
                         position: "sticky",
                         top: 50,
-                        backgroundColor: "#191919"
+                        backgroundColor: "#191919",
+                        zIndex: 1
                     }}>
                         <div onClick={
                             () => setTab('chats')
