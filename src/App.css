@@ -76,19 +76,18 @@ a{
     cursor: pointer;
 }
 .channel{
-    padding: 50px 20px;
+    padding:50px 20px;
     background-color: #191919;
 }
-
 li.self{
     display: flex;
     justify-content: flex-end;
-    margin: 10px 0;
+    margin: 5px 0;
 }
 li.other{
     display: flex;
     justify-content: flex-start;
-    margin: 10px 0;
+    margin: 5px 0;
 }
 .block{
     display: flex;
@@ -110,7 +109,7 @@ li.self  .text-box{
     margin-top: 5px;
     background: #353535;
     color: white;
-    padding: 8px;
+    padding: 4px 8px;
     border-radius: 0px 10px 10px 10px;
     animation: animate .3s;
     transform-origin: top left;

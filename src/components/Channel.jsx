@@ -16,6 +16,7 @@ const Channel = ({ currentUser }) => {
     const [loading, setLoading] = useState(true);
     const { uid, displayName, photoURL } = currentUser;
 
+
     useEffect(() => {
         if (db) {
             const unsubscribe = async () => {
@@ -28,11 +29,17 @@ const Channel = ({ currentUser }) => {
                 }));
                 setMessages(data);
                 setLoading(false)
-                if (document.querySelector('.scroll')) document.querySelector('.scroll').scrollIntoView()
+
             }
             unsubscribe();
         }
-    });
+    }, [chatId]);
+
+    useEffect(() => {
+        if (messages.length === 0) return
+        if (!document.querySelector('.scroll')) return
+        document.querySelector('.scroll').scrollIntoView()
+    })
 
     const handleOnChange = e => {
         setNewMessage(e.target.value);
@@ -40,17 +47,18 @@ const Channel = ({ currentUser }) => {
 
     const handleOnSubmit = e => {
         e.preventDefault();
-
+        const doc = {
+            text: newMessage,
+            createdAt: serverTimestamp(),
+            displayName,
+            uid,
+            photoURL,
+            chatId: chatId
+        }
         if (db) {
-            addDoc(collection(db, 'messages'), {
-                text: newMessage,
-                createdAt: serverTimestamp(),
-                displayName,
-                uid,
-                photoURL,
-                chatId: chatId
-            })
+            addDoc(collection(db, 'messages'), doc)
             setNewMessage('');
+            setMessages(prev => [...prev, doc])
         }
     }
 
@@ -61,23 +69,23 @@ const Channel = ({ currentUser }) => {
                 <>
                     <div id="channel" className="channel">
 
-                        {messages.length === 0 ? <div
-                            style={{
-                                color: "#555",
-                                textAlign: "center",
-                                marginTop: 50
-                            }}
-                        >No Messages!</div> : messages.map(message => (
+                        {messages.length === 0 ? <>
+                            <div
+                                style={{
+                                    color: "#555",
+                                    textAlign: "center",
+                                    marginTop: 50
+                                }}
+                            >No Messages!
+                            </div>
+                        </> : messages.map(message => (
                             <li className={currentUser.uid === message.uid ? "self" : "other"} key={message.id}>
                                 <Message message={message} />
                             </li>
                         ))}
 
                     </div>
-
                     <div className="scroll"></div>
-
-
                     <form autoComplete='off' onSubmit={handleOnSubmit}>
                         <input type="text"
                             value={newMessage}
