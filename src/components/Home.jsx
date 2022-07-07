@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import Text from './Text';
 import { connect } from 'react-redux'
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import CreateChat from './CreateChat';
 import { db } from '../firebase.config';
+import CreateGroup from './CreateGroup';
 
 function Home(props) {
 
-    const { currentUser, chats, setChats } = props
+    const { currentUser, chats, setChats, setGroups, setUsers, groups } = props
     const [loading, setLoading] = useState(true);
+    const [tab, setTab] = useState('chats');
 
     const seesawMembers = ['sk.jaiswal1729@gmail.com']
 
@@ -33,6 +35,41 @@ function Home(props) {
         }
     }, [currentUser.uid, setChats])
 
+    useEffect(() => {
+        if (db) {
+            const unsubscribe = async () => {
+                const grpsRef = collection(db, 'groups');
+                const q = query(grpsRef, where('membersIds', 'array-contains', currentUser.uid))
+                const snapshot = await getDocs(q)
+
+                const data = snapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id,
+
+                }));
+                setGroups(data);
+                setLoading(false)
+
+            }
+            unsubscribe();
+        }
+    }, [currentUser.uid, setGroups])
+
+    useEffect(() => {
+        if (db) {
+            const unsubscribe = async () => {
+                const q = query(collection(db, 'users'), orderBy('displayName'))
+                const querySnapshot = await getDocs(q);
+                const data = querySnapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id,
+
+                }));
+                setUsers(data)
+            }
+            unsubscribe()
+        }
+    }, [setUsers])
 
     // const createChat = async uid => {
     //     const creater = currentUser.uid
@@ -58,43 +95,91 @@ function Home(props) {
         <div className='home'>{
             loading ? <Text text={'Loading...'} /> :
                 <div className='container p-0'>
+                    <div className="row header m-0 py-2" style={{
+                        position: "sticky",
+                        top: 50,
+                        backgroundColor: "#191919"
+                    }}>
+                        <div onClick={
+                            () => setTab('chats')
+                        }
+                            className="col text-center mx-2 py-2 px-5"
+                            role={'button'}
+                            style={{
+                                color: tab === 'chats' && "green",
+                                borderBottom: tab === 'chats' && "2px solid green"
+                            }}>
+                            CHATS
+                        </div>
+                        <div onClick={
+                            () => setTab('groups')
+                        }
+                            className="col text-center mx-2 py-2 px-5"
+                            role={'button'}
+                            style={{
+                                color: tab === 'groups' && "green",
+                                borderBottom: tab === 'groups' && "2px solid green"
+                            }}>
+                            GROUPS
+                        </div>
+                    </div>
                     {
-                        seesawMembers.includes(currentUser.email) &&
-                        <Link to='/chat/see-saw' className='channelEl d-flex container mt-2' style={{
-                            border: "2px solid #191919"
-                        }}>
-                            <img src='logo.webp' className='my-auto' alt="" id='Avatar' width={40} height={40} />
-                            <div className='ms-3 h6 my-auto'>See Saw</div>
-                        </Link>
-                    }
+                        tab === 'chats' ? <>
+                            {
+                                chats.length === 0 ? <Text text={'Create Chats!'} /> :
+                                    chats.map(chat => {
+                                        if (chat.m1UID === currentUser.uid) {
+                                            return (
+                                                <Link key={chat.id} to={`/chat/${chat.id}`} className='channelEl d-flex container' style={{
+                                                    border: "2px solid #191919"
+                                                }}>
+                                                    <img src={chat.m2DP} className='my-auto' alt="" id='Avatar' width={40} height={40} />
+                                                    <div className='ms-3 h6 my-auto'>{chat.m2Name}</div>
+                                                </Link>
+                                            )
+                                        }
+                                        else {
+                                            return (
+                                                <Link key={chat.id} to={`/chat/${chat.id}`} className='channelEl d-flex container' style={{
+                                                    border: "2px solid #191919"
+                                                }}>
+                                                    <img src={chat.m1DP} className='my-auto' alt="" id='Avatar' width={40} height={40} />
+                                                    <div className='ms-3 h6 my-auto'>{chat.m1Name}</div>
+                                                </Link>
+                                            )
+                                        }
+                                    }
 
-                    {
-                        chats.length === 0 ? <Text text={'Create Chats!'} /> :
-                            chats.map(chat => {
-                                if (chat.m1UID === currentUser.uid) {
-                                    return (
-                                        <Link key={chat.id} to={`/chat/${chat.id}`} className='channelEl d-flex container' style={{
-                                            border: "2px solid #191919"
-                                        }}>
-                                            <img src={chat.m2DP} className='my-auto' alt="" id='Avatar' width={40} height={40} />
-                                            <div className='ms-3 h6 my-auto'>{chat.m2Name}</div>
-                                        </Link>
                                     )
-                                }
-                                else {
-                                    return (
-                                        <Link key={chat.id} to={`/chat/${chat.id}`} className='channelEl d-flex container' style={{
-                                            border: "2px solid #191919"
-                                        }}>
-                                            <img src={chat.m1DP} className='my-auto' alt="" id='Avatar' width={40} height={40} />
-                                            <div className='ms-3 h6 my-auto'>{chat.m1Name}</div>
-                                        </Link>
-                                    )
-                                }
                             }
+                        </>
+                            :
+                            <>
+                                {
+                                    seesawMembers.includes(currentUser.email) &&
+                                    <Link to='/chat/see-saw' className='channelEl d-flex container mt-2' style={{
+                                        border: "2px solid #191919"
+                                    }}>
+                                        <img src='logo.webp' className='my-auto' alt="" id='Avatar' width={40} height={40} />
+                                        <div className='ms-3 h6 my-auto'>See Saw</div>
+                                    </Link>
+                                }
+                                {
+                                    groups.length === 0 ? <Text text={'Create Groups!'} /> :
+                                        groups.map(grp =>
+                                            <Link key={grp.id} to={`/group/${grp.id}`} className='channelEl d-flex container' style={{
+                                                border: "2px solid #191919"
+                                            }}>
+                                                <img src='grp.jpg' className='my-auto' alt="" id='Avatar' width={40} height={40} />
+                                                <div className='ms-3 h6 my-auto'>{grp.grpName}</div>
+                                            </Link>
 
-                            )
+
+                                        )
+                                }
+                            </>
                     }
+
 
                 </div>
         }
@@ -106,9 +191,7 @@ function Home(props) {
                 height: 45,
             }}>
                 <CreateChat />
-                <div className="createBtn col-6 p-2 text-center text-secondary">
-                    Create Group
-                </div>
+                <CreateGroup />
             </div>
 
         </div>
@@ -118,13 +201,21 @@ function Home(props) {
 const mapStateToProps = (state) => {
     return {
         currentUser: state.user,
-        chats: state.chats
+        chats: state.chats,
+        groups: state.groups,
+        allUsers: state.users,
     }
 }
 const mapDispatchToProps = (dispatch) => {
     return {
         setChats: (data) => {
             dispatch({ type: 'SET_CHATS', payload: data })
+        },
+        setGroups: (data) => {
+            dispatch({ type: 'SET_GROUPS', payload: data })
+        },
+        setUsers: (data) => {
+            dispatch({ type: 'SET_USERS', payload: data })
         },
     }
 }

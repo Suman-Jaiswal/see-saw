@@ -10,7 +10,7 @@ import { db } from '../firebase.config';
 
 const Channel = ({ currentUser }) => {
 
-    const { chatId } = useParams()
+    const { id } = useParams()
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ const Channel = ({ currentUser }) => {
     useEffect(() => {
         if (db) {
             const unsubscribe = async () => {
-                const q = query(collection(db, 'messages'), where('chatId', '==', chatId), orderBy('createdAt'), limit(1000))
+                const q = query(collection(db, 'messages'), where('chatId', '==', id), orderBy('createdAt'), limit(1000))
                 const querySnapshot = await getDocs(q);
                 const data = querySnapshot.docs.map(doc => ({
                     ...doc.data(),
@@ -33,7 +33,7 @@ const Channel = ({ currentUser }) => {
             }
             unsubscribe();
         }
-    }, [chatId]);
+    }, [id]);
 
     useEffect(() => {
         if (messages.length === 0) return
@@ -53,7 +53,7 @@ const Channel = ({ currentUser }) => {
             displayName,
             uid,
             photoURL,
-            chatId: chatId
+            chatId: id
         }
         if (db) {
             addDoc(collection(db, 'messages'), doc)

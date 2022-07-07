@@ -40,6 +40,17 @@ const rootReducer = (state = initialState, action) => {
                 chats: [...state.chats, action.payload]
             }
 
+        case 'SET_GROUPS':
+            return {
+                ...state,
+                groups: action.payload,
+            }
+        case 'ADD_GROUP':
+            return {
+                ...state,
+                groups: [...state.groups, action.payload]
+            }
+
 
         case 'SET_USERS':
             return {

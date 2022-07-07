@@ -1,34 +1,16 @@
-import { addDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react'
+import { addDoc, collection } from 'firebase/firestore';
+import React, { useState } from 'react'
 import { Modal } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase.config';
-import Text from './Text';
+import { db } from '../firebase.config'
 
 function CreateChat(props) {
 
-    const { currentUser, allUsers, addChat, chats, setUsers } = props
+    const { currentUser, allUsers, addChat, chats } = props
     const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [creating, setCreating] = useState(false);
     const navigate = useNavigate()
-
-    useEffect(() => {
-        if (db) {
-            const unsubscribe = async () => {
-                const q = query(collection(db, 'users'), orderBy('displayName'))
-                const querySnapshot = await getDocs(q);
-                const data = querySnapshot.docs.map(doc => ({
-                    ...doc.data(),
-                    id: doc.id,
-
-                }));
-                setUsers(data)
-                setLoading(false)
-            }
-            unsubscribe()
-        }
-    }, [setUsers])
 
     const createChat = async m2 => {
         const doc = {
@@ -50,6 +32,12 @@ function CreateChat(props) {
                     addChat({ ...doc, id: res.id })
                     navigate(`/chat/${res.id}`)
                 })
+        setCreating(false)
+    }
+
+    const handleCreate = (u) => {
+        setCreating(true);
+        createChat(u)
     }
 
     return (<>
@@ -67,12 +55,12 @@ function CreateChat(props) {
             <Modal.Body style={{
                 backgroundColor: "#191919"
             }}>
-                {loading ? <Text text={'Loading...'} /> :
+                {
                     allUsers.map(u => {
                         const c = chats.filter(c => c.bothIds.includes(u.uid))
-                        if (c.length === 0) {
+                        if (c.length === 0 && !creating) {
                             return (
-                                <div onClick={() => createChat(u)}
+                                <div onClick={() => handleCreate(u)}
                                     style={{
                                         backgroundColor: "#323232",
                                         cursor: "pointer"
@@ -112,9 +100,6 @@ const mapDispatchToProps = (dispatch) => {
     return {
         addChat: (data) => {
             dispatch({ type: 'ADD_CHAT', payload: data })
-        },
-        setUsers: (data) => {
-            dispatch({ type: 'SET_USERS', payload: data })
         },
     }
 }

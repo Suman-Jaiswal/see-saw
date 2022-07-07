@@ -32,7 +32,6 @@ function App(props) {
                         email: data.email,
                         admin: data.admin,
                     })
-                    setInitializing(false)
                 }
                 else {
                     addDoc(usersRef, {
@@ -52,9 +51,10 @@ function App(props) {
                                 email: data.email,
                                 admin: data.admin,
                             })
-                            setInitializing(false)
+
                         })
                 }
+                setInitializing(false)
             } else {
                 clearUser()
                 setInitializing(false)
@@ -137,7 +137,13 @@ function App(props) {
                                 <Home />
                             </>
                         } />
-                        <Route path="/chat/:chatId" exact element={
+                        <Route path="/chat/:id" exact element={
+                            <>
+                                <Header signOut={logOut} clearChat={clearChat} />
+                                <Channel />
+                            </>
+                        } />
+                        <Route path="/group/:id" exact element={
                             <>
                                 <Header signOut={logOut} clearChat={clearChat} />
                                 <Channel />
