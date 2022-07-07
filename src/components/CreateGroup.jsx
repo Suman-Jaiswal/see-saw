@@ -38,7 +38,7 @@ function CreateGroup(props) {
     }
 
     return (<>
-        <div onClick={() => setOpen(true)} className="createBtn col-6 p-2 text-center">
+        <div onClick={() => setOpen(true)} className="createBtn col-6 p-2 text-center" style={{ fontSize: 14 }}>
             Create Group
         </div>
         <Modal className='bg-dark h-100' show={open} onHide={() => setOpen(false)}>

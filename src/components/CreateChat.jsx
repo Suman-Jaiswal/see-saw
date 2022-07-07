@@ -41,7 +41,7 @@ function CreateChat(props) {
     }
 
     return (<>
-        <div onClick={() => setOpen(true)} className="createBtn col-6 p-2 text-center">
+        <div onClick={() => setOpen(true)} className="createBtn col-6 p-2 text-center" style={{ fontSize: 14 }}>
             Create Chat
         </div>
         <Modal className='bg-dark' show={open} onHide={() => setOpen(false)}>
