@@ -1,38 +1,38 @@
 import { useState, useEffect } from 'react';
-//firebase dep
-import firebase from 'firebase/app';
 import Message from './Message'
 import '../App.css'
+import { useParams } from 'react-router-dom'
+import { connect } from 'react-redux'
+import Text from './Text';
+import { addDoc, collection, getDocs, limit, orderBy, query, serverTimestamp, where } from 'firebase/firestore';
+import { db } from '../firebase.config';
 
 
+const Channel = ({ currentUser }) => {
 
-const Channel = ({ user = null, db = null }, props) => {
-    const auth = props.auth;
+    const { chatId } = useParams()
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
-    const { uid, displayName, photoURL } = user;
+    const { uid, displayName, photoURL } = currentUser;
 
     useEffect(() => {
         if (db) {
-            const unsubscribe = db
-                .collection('messages')
-                .orderBy('createdAt')
-                .limit(100)
-                .onSnapshot(querySnapshot => {
-                    const data = querySnapshot.docs.map(doc => ({
-                        ...doc.data(),
-                        id: doc.id,
+            const unsubscribe = async () => {
+                const q = query(collection(db, 'messages'), where('chatId', '==', chatId), orderBy('createdAt'), limit(1000))
+                const querySnapshot = await getDocs(q);
+                const data = querySnapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id,
 
-                    }));
-                    setMessages(data);
-                    setLoading(false)
-                    document.querySelector('.scroll').scrollIntoView()
-                });
-            return unsubscribe;
+                }));
+                setMessages(data);
+                setLoading(false)
+                if (document.querySelector('.scroll')) document.querySelector('.scroll').scrollIntoView()
+            }
+            unsubscribe();
         }
-
-    }, [db]);
+    });
 
     const handleOnChange = e => {
         setNewMessage(e.target.value);
@@ -42,29 +42,22 @@ const Channel = ({ user = null, db = null }, props) => {
         e.preventDefault();
 
         if (db) {
-            db.collection('messages').add({
+            addDoc(collection(db, 'messages'), {
                 text: newMessage,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: serverTimestamp(),
                 displayName,
                 uid,
-                photoURL
+                photoURL,
+                chatId: chatId
             })
             setNewMessage('');
-
         }
     }
-
 
     return (
 
         <>{
-            loading ? <div
-                style={{
-                    color: "#555",
-                    textAlign: "center",
-                    marginTop: 50
-                }}
-            >Loading...</div> :
+            loading ? <Text text={'Loading...'} /> :
                 <>
                     <div id="channel" className="channel">
 
@@ -75,8 +68,8 @@ const Channel = ({ user = null, db = null }, props) => {
                                 marginTop: 50
                             }}
                         >No Messages!</div> : messages.map(message => (
-                            <li className={user.uid === message.uid ? "self" : "other"} key={message.id}>
-                                <Message auth={auth}  {...message} />
+                            <li className={currentUser.uid === message.uid ? "self" : "other"} key={message.id}>
+                                <Message message={message} />
                             </li>
                         ))}
 
@@ -93,17 +86,28 @@ const Channel = ({ user = null, db = null }, props) => {
                             id="placeholder"
                         />
                         <button className='submit' type="submit" disabled={newMessage === ''}>
-                            <i class="material-icons">send</i>
+                            <i className="material-icons">send</i>
                         </button>
                     </form>
                 </>
         }
 
-
-
-
         </>
     );
 };
 
-export default Channel;
+const mapStateToProps = (state) => {
+    return {
+        currentUser: state.user,
+        chats: state.chats
+    }
+}
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setChats: (data) => {
+            dispatch({ type: 'SET_CHATS', payload: data })
+        },
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Channel);

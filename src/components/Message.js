@@ -1,13 +1,8 @@
 import React from 'react';
 
 
-export default function Message(
-    {
-        createdAt = null,
-        text = '',
-        displayName = '',
-        photoURL = '' },
-    props) {
+export default function Message({ message }) {
+    const { photoURL, text } = message
 
     return (
         <>
@@ -23,7 +18,6 @@ export default function Message(
                 </div>
                 <div className="text-box">
 
-
                     <div className="msg">{text}</div>
 
                     {/* {createdAt?.seconds ?
@@ -33,9 +27,6 @@ export default function Message(
                         : null
                     } */}
                 </div>
-
-
-
             </div>
         </>
     )

@@ -5,10 +5,13 @@ margin: 0;
 padding: 0;
 }
 body{
-    background-color: #353535 !important;
+    background-color: #383838 !important;
 }
 button:focus{
     outline: none;
+}
+a{
+    text-decoration: none !important;
 }
 .app{
     height: 100vh;
@@ -16,14 +19,27 @@ button:focus{
     max-width: 600px;
     background-color: #191919 !important;
 }
+.home{
+    background-color: #191919;
+    padding: 45px 0;
+}
+.channelEl{
+    width: 100%;
+    max-width: 600px;
+    height: 60px;
+    background-color: #202124;
+}
 .header{
     background-color: #191919;
     display: flex;
-    position: sticky;
+    position: fixed;
+    width: 100%;
+    max-width: 600px;
     top: 0;
     justify-content: space-between;
     padding: 10px 20px;
-    border-bottom: 1px solid rgb(56, 56, 56);
+    border-bottom: 1px solid #383838;
+    height: 50px;
 }
 .logo{
    display: flex;
@@ -32,7 +48,7 @@ button:focus{
    margin-left: 5px;
    margin-top: 3px;
 }
-.home{
+.landing{
     padding: auto;
     height: 500px;
     padding-top: 100px;
@@ -60,9 +76,8 @@ button:focus{
     cursor: pointer;
 }
 .channel{
-    padding: 10px 20px;
+    padding: 50px 20px;
     background-color: #191919;
-    padding-bottom: 50px;
 }
 
 li.self{
@@ -204,6 +219,16 @@ input:focus{
 }
 
 /* Change the background color of the dropdown button when the dropdown content is shown */
+
+
+
+
+/* // home */
+.createBtn {
+    text-align: center;
+    border: 1px solid #383838;
+}
+
 
 @keyframes animate {
     from {

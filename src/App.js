@@ -1,64 +1,83 @@
 import { useState, useEffect } from 'react';
-import './App.css';
-//firebase dep
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import 'firebase/auth';
-// import {useAuthState} from 'react-firebase-hooks/auth';
-// import {useCollectionData} from 'react-firebase-hooks/firestore';
-
-//components
+import './App.css'
 import Header from './components/Header.jsx';
 import Channel from './components/Channel.jsx'
+import Text from './components/Text';
+import { connect } from 'react-redux'
+import {
+    Routes,
+    Route,
+} from "react-router-dom"
+import Home from './components/Home';
+import { auth, db } from './firebase.config';
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCNgFUnzymEne5SHK6-lXxSFHkGMO7_bF4",
-    authDomain: "chat-app-b8cf5.firebaseapp.com",
-    projectId: "chat-app-b8cf5",
-    storageBucket: "chat-app-b8cf5.appspot.com",
-    messagingSenderId: "317951965735",
-    appId: "1:317951965735:web:2847503ebb626b5f042c02"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-function App() {
-    const [user, setUser] = useState(() => auth.currentUser);
+function App(props) {
+    const { authorised, setUser, clearUser } = props
     const [initializing, setInitializing] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
+        onAuthStateChanged(auth, async user => {
             if (user) {
-                setUser(user);
-                console.log(user)
+                const usersRef = collection(db, 'users')
+                const q = query(usersRef, where('uid', '==', user.uid));
+                const userInst = await getDocs(q);
+                if (userInst.size) {
+                    const data = userInst.docs[0].data()
+                    setUser({
+                        uid: data.uid,
+                        displayName: data.displayName,
+                        photoURL: data.photoURL,
+                        email: data.email,
+                        admin: data.admin,
+                    })
+                    setInitializing(false)
+                }
+                else {
+                    addDoc(usersRef, {
+                        displayName: user.displayName,
+                        email: user.email,
+                        uid: user.uid,
+                        photoURL: user.photoURL,
+                        admin: false
+                    })
+                        .then(res => {
+                            console.log('user created')
+                            const data = user
+                            setUser({
+                                uid: data.uid,
+                                displayName: data.displayName,
+                                photoURL: data.photoURL,
+                                email: data.email,
+                                admin: data.admin,
+                            })
+                            setInitializing(false)
+                        })
+                }
             } else {
-                setUser(null);
-            }
-            if (initializing) {
-                setInitializing(false);
+                clearUser()
+                setInitializing(false)
             }
         })
-        return unsubscribe
-    });
+    }, [clearUser, setUser]);
 
     const signInWithGoogle = async () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
+
+        const provider = new GoogleAuthProvider()
         auth.useDeviceLanguage();
 
         try {
-            await auth.signInWithPopup(provider)
+            await signInWithPopup(auth, provider)
         } catch (error) {
             console.error(error);
         }
     };
 
-    const signOut = async () => {
+    const logOut = async () => {
         try {
-            await firebase.auth().signOut();
+            await signOut(auth);
+            clearUser()
         } catch (error) {
             console.log(error.message);
         }
@@ -66,7 +85,7 @@ function App() {
 
 
     async function clearChat(db, collectionPath, batchSize) {
-        const collectionRef = db.collection(collectionPath);
+        const collectionRef = collectionPath(collectionPath)
         const query = collectionRef.orderBy('__name__').limit(batchSize);
 
         return new Promise((resolve, reject) => {
@@ -99,23 +118,35 @@ function App() {
     }
 
 
+
+
     if (initializing) return (
-        <h4 style={{
-            marginTop: 100,
-            textAlign: "center"
-        }}>Loading...</h4>
+        <Text text={'Initialising...'} />
     )
 
     return (
 
         <div className='app'>
-            {user ? (
+            {authorised ? (
                 <>
-                    <Header signOut={signOut} clearChat={clearChat} db={db} />
-                    <Channel auth={auth} user={user} db={db} />
+
+                    <Routes>
+                        <Route path="/" exact element={
+                            <>
+                                <Header signOut={logOut} clearChat={clearChat} />
+                                <Home />
+                            </>
+                        } />
+                        <Route path="/chat/:chatId" exact element={
+                            <>
+                                <Header signOut={logOut} clearChat={clearChat} />
+                                <Channel />
+                            </>
+                        } />
+                    </Routes>
                 </>
             ) : (
-                <div className='home'>
+                <div className='landing'>
                     <div>
                         <img src="logo.webp" alt="" width={200} height={200} />
                         <h1 style={{
@@ -131,4 +162,22 @@ function App() {
     );
 }
 
-export default App;
+const mapStateToProps = (state) => {
+    return {
+        currentUser: state.user,
+        authorised: state.authorised
+    }
+}
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setUser: (data) => {
+            dispatch({ type: 'SET_USER', payload: data })
+        },
+        clearUser: () => {
+            dispatch({ type: 'CLEAR_USER' })
+        },
+
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
