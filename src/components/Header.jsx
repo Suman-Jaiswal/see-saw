@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import '../App.css'
 import { connect } from 'react-redux'
 
-function Header({ signOut, clearChat, currentUser, chats }) {
+function Header({ signOut, currentUser, chats }) {
 
     const { chatId } = useParams()
     const [chat, setChat] = useState(null)
