@@ -11,12 +11,24 @@ import {
 import Home from './components/Home';
 import { auth, db } from './firebase.config';
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 
 function App(props) {
-    const { authorised, setUser, clearUser } = props
+    const {
+        currentUser,
+        authorised,
+        setUser,
+        clearUser,
+        setChats,
+        setGroups,
+        setUsers,
+    } = props
+
+    const [loading, setLoading] = useState(true);
     const [initializing, setInitializing] = useState(true);
 
+
+    // sign in a user
     useEffect(() => {
         onAuthStateChanged(auth, async user => {
             if (user) {
@@ -51,7 +63,6 @@ function App(props) {
                                 email: data.email,
                                 admin: data.admin,
                             })
-
                         })
                 }
                 setInitializing(false)
@@ -84,86 +95,109 @@ function App(props) {
     };
 
 
-    async function clearChat(db, collectionPath, batchSize) {
-        const collectionRef = collectionPath(collectionPath)
-        const query = collectionRef.orderBy('__name__').limit(batchSize);
+    // get all chats for current user
+    useEffect(() => {
+        if (db) {
+            setLoading(true)
+            const unsubscribe = async () => {
+                const chatsRef = collection(db, 'chats');
+                const q = query(chatsRef, where('bothIds', 'array-contains', currentUser.uid))
+                const snapshot = await getDocs(q)
 
-        return new Promise((resolve, reject) => {
-            deleteQueryBatch(db, query, resolve).catch(reject);
-        });
-    }
+                const data = snapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id,
 
-    async function deleteQueryBatch(db, query, resolve) {
-        const snapshot = await query.get();
+                }));
+                setChats(data);
+                setLoading(false)
 
-        const batchSize = snapshot.size;
-        if (batchSize === 0) {
-            // When there are no documents left, we are done
-            resolve();
-            return;
+            }
+            unsubscribe();
         }
-
-        // Delete documents in a batch
-        const batch = db.batch();
-        snapshot.docs.forEach((doc) => {
-            batch.delete(doc.ref);
-        });
-        await batch.commit();
-
-        // Recurse on the next process tick, to avoid
-        // exploding the stack.
-        process.nextTick(() => {
-            deleteQueryBatch(db, query, resolve);
-        });
-    }
+    }, [currentUser.uid, setChats])
 
 
+    // get all groups of current user
+    useEffect(() => {
+        if (db) {
+            setLoading(true)
+            const unsubscribe = async () => {
+                const grpsRef = collection(db, 'groups');
+                const q = query(grpsRef, where('membersIds', 'array-contains', currentUser.uid))
+                const snapshot = await getDocs(q)
+
+                const data = snapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id,
+
+                }));
+                setGroups(data);
+                setLoading(false)
+
+            }
+            unsubscribe();
+        }
+    }, [currentUser.uid, setGroups])
 
 
-    if (initializing) return (
-        <Text text={'Initialising...'} />
-    )
+    //  get all users
+    useEffect(() => {
+        if (db) {
+            setLoading(true)
+            const unsubscribe = async () => {
+                const q = query(collection(db, 'users'), orderBy('displayName'))
+                const querySnapshot = await getDocs(q);
+                const data = querySnapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id,
+
+                }));
+                setUsers(data)
+            }
+            unsubscribe()
+        }
+    }, [setUsers])
+
 
     return (
-
         <div className='app'>
-            {authorised ? (
-                <>
+            {
+                initializing ? <Text text={'Initialising...'} /> :
+                    authorised ?
+                        <Routes>
+                            <Route path="/" exact element={
+                                <>
+                                    <Header signOut={logOut} />
+                                    <Home loading={loading} />
+                                </>
+                            } />
+                            <Route path="/chat/:id" exact element={
+                                <>
+                                    <Header signOut={logOut} />
+                                    <Channel />
+                                </>
+                            } />
+                            <Route path="/group/:id" exact element={
+                                <>
+                                    <Header signOut={logOut} />
+                                    <Channel />
+                                </>
+                            } />
+                        </Routes>
+                        :
+                        <div className='landing'>
+                            <div>
+                                <img src="logo.webp" alt="" width={200} height={200} />
+                                <h1 style={{
+                                    textAlign: "center"
+                                }}>See Saw</h1>
+                            </div>
 
-                    <Routes>
-                        <Route path="/" exact element={
-                            <>
-                                <Header signOut={logOut} clearChat={clearChat} />
-                                <Home />
-                            </>
-                        } />
-                        <Route path="/chat/:id" exact element={
-                            <>
-                                <Header signOut={logOut} clearChat={clearChat} />
-                                <Channel />
-                            </>
-                        } />
-                        <Route path="/group/:id" exact element={
-                            <>
-                                <Header signOut={logOut} clearChat={clearChat} />
-                                <Channel />
-                            </>
-                        } />
-                    </Routes>
-                </>
-            ) : (
-                <div className='landing'>
-                    <div>
-                        <img src="logo.webp" alt="" width={200} height={200} />
-                        <h1 style={{
-                            textAlign: "center"
-                        }}>See Saw</h1>
-                    </div>
+                            <button className='login' onClick={signInWithGoogle}>Sign In with Google</button>
+                        </div>
 
-                    <button className='login' onClick={signInWithGoogle}>Sign In with Google</button>
-                </div>
-
-            )}
+            }
         </div>
     );
 }
@@ -182,7 +216,15 @@ const mapDispatchToProps = (dispatch) => {
         clearUser: () => {
             dispatch({ type: 'CLEAR_USER' })
         },
-
+        setChats: (data) => {
+            dispatch({ type: 'SET_CHATS', payload: data })
+        },
+        setGroups: (data) => {
+            dispatch({ type: 'SET_GROUPS', payload: data })
+        },
+        setUsers: (data) => {
+            dispatch({ type: 'SET_USERS', payload: data })
+        },
     }
 }
 

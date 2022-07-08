@@ -59,7 +59,6 @@ function Header({ signOut, currentUser, chats, groups }) {
             <div className="dropdown">
                 <button className="dropbtn">&#10247;</button>
                 <div className="dropdown-content">
-                    {/* <div className='' onClick={() => clearChat(db, 'messages', 100)} >Clear Chat</div> */}
                     <div className='text-danger' onClick={signOut} >Sign Out</div>
                 </div>
             </div>

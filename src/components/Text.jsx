@@ -2,10 +2,12 @@ import React from 'react'
 
 export default function Text({ text }) {
     return (
-        <h6 className='text-secondary' style={{
-            marginTop: 100,
-            left: "calc(50% - 48px)",
+        <div className='text-secondary' style={{
+            marginTop: "100px",
             position: "absolute",
-        }}>{text}</h6>
+            width: "100%",
+            maxWidth: 600,
+            textAlign: "center"
+        }}>{text}</div>
     )
 }

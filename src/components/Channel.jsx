@@ -63,42 +63,42 @@ const Channel = ({ currentUser }) => {
     }
 
     return (
+        <>
+            {
+                loading ? <Text text={'Loading...'} /> :
+                    <>
+                        <div id="channel" className="channel">
 
-        <>{
-            loading ? <Text text={'Loading...'} /> :
-                <>
-                    <div id="channel" className="channel">
+                            {messages.length === 0 ? <>
+                                <div
+                                    style={{
+                                        color: "#555",
+                                        textAlign: "center",
+                                        marginTop: 50
+                                    }}
+                                >No Messages!
+                                </div>
+                            </> : messages.map(message => (
+                                <li className={currentUser.uid === message.uid ? "self" : "other"} key={message.id}>
+                                    <Message message={message} />
+                                </li>
+                            ))}
 
-                        {messages.length === 0 ? <>
-                            <div
-                                style={{
-                                    color: "#555",
-                                    textAlign: "center",
-                                    marginTop: 50
-                                }}
-                            >No Messages!
-                            </div>
-                        </> : messages.map(message => (
-                            <li className={currentUser.uid === message.uid ? "self" : "other"} key={message.id}>
-                                <Message message={message} />
-                            </li>
-                        ))}
-
-                    </div>
-                    <div className="scroll"></div>
-                    <form autoComplete='off' onSubmit={handleOnSubmit}>
-                        <input type="text"
-                            value={newMessage}
-                            onChange={handleOnChange}
-                            placeholder="Type a message"
-                            id="placeholder"
-                        />
-                        <button className='submit' type="submit" disabled={newMessage === ''}>
-                            <i className="material-icons">send</i>
-                        </button>
-                    </form>
-                </>
-        }
+                        </div>
+                        <div className="scroll"></div>
+                        <form autoComplete='off' onSubmit={handleOnSubmit}>
+                            <input type="text"
+                                value={newMessage}
+                                onChange={handleOnChange}
+                                placeholder="Type a message"
+                                id="placeholder"
+                            />
+                            <button className='submit' type="submit" disabled={newMessage === ''}>
+                                <i className="material-icons">send</i>
+                            </button>
+                        </form>
+                    </>
+            }
 
         </>
     );
