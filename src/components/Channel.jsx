@@ -33,7 +33,7 @@ const Channel = ({ currentUser }) => {
             }
             unsubscribe();
         }
-    }, [id]);
+    });
 
     useEffect(() => {
         if (messages.length === 0) return
